@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Details</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+<div class="container mt-5">
+    <h2>Event Details</h2>
+    <form id="eventForm">
+        <input type="hidden" id="eventId" value="{{id}}">
+        <input type="hidden" id="eventType" value="{{type}}">
+        <div class="form-group">
+            <label for="eventName">Event Name:</label>
+            <input type="text" class="form-control" id="eventName" name="eventName">
+        </div>
+        <div class="form-group">
+            <label for="startDate">Start Date:</label>
+            <input type="date" class="form-control" id="startDate" name="startDate">
+        </div>
+        <div class="form-group">
+            <label for="endDate">End Date:</label>
+            <input type="date" class="form-control" id="endDate" name="endDate">
+        </div>
+        <div class="form-group">
+            <label for="eventLocationName">Event Location Name:</label>
+            <input type="text" class="form-control" id="eventLocationName" name="eventLocationName">
+        </div>
+        <div class="form-group">
+            <label for="eventLogo">Event Logo:</label>
+            <input type="file" class="form-control" id="eventLogo" name="eventLogo">
+            <img id="eventLogoPreview" src="" alt="Event Logo" class="mt-2" style="max-width: 200px;">
+        </div>
+        <div class="form-group">
+            <label for="clientName">Client Name:</label>
+            <input type="text" class="form-control" id="clientName" name="clientName">
+        </div>
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" class="form-control" id="email" name="email">
+        </div>
+        <div class="form-group">
+            <label for="contactNumber">Contact Number:</label>
+            <input type="text" class="form-control" id="contactNumber" name="contactNumber">
+        </div>
+        <div class="form-group">
+            <label for="address">Address:</label>
+            <input type="text" class="form-control" id="address" name="address">
+        </div>
+        <div class="form-group">
+            <label for="clientLogo">Client Logo:</label>
+            <input type="file" class="form-control" id="clientLogo" name="clientLogo">
+            <img id="clientLogoPreview" src="" alt="Client Logo" class="mt-2" style="max-width: 200px;">
+        </div>
+        <button type="submit" class="btn btn-primary" id="saveBtn">Save</button>
+    </form>
+</div>
+
+<script>
+    $(document).ready(function() {
+        const eventType = $('#eventType').val();
+        const eventId = $('#eventId').val();
+        const API_URL = '/api/events';
+
+        function prefillData() {
+            // Fetch event details from API and prefill the form
+            $.get(API_URL + '/' + eventId, function(data) {
+                $('#eventName').val(data.eventName);
+                $('#startDate').val(data.startDate);
+                $('#endDate').val(data.endDate);
+                $('#eventLocationName').val(data.eventLocationName);
+                $('#eventLogoPreview').attr('src', data.eventLogo);
+                $('#clientName').val(data.clientName);
+                $('#email').val(data.email);
+                $('#contactNumber').val(data.contactNumber);
+                $('#address').val(data.address);
+                $('#clientLogoPreview').attr('src', data.clientLogo);
+
+                // If in 'view' mode, set all fields to readonly
+                if (eventType === 'view') {
+                    $('input, textarea, select').attr('readonly', true);
+                    $('#saveBtn').hide();
+                }
+            });
+        }
+
+        if (eventType === 'view' || eventType === 'edit') {
+            prefillData();
+        }
+
+        // Handle form submission
+        $('#eventForm').submit(function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+
+            if (eventType === 'new') {
+                // Save new event
+                $.ajax({
+                    url: API_URL,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(result) {
+                        alert('Event created successfully!');
+                        window.location.href = '/';
+                    },
+                    error: function(err) {
+                        alert('Error creating event: ' + err.responseText);
+                    }
+                });
+            } else if (eventType === 'edit') {
+                // Update existing event
+                $.ajax({
+                    url: API_URL + '/' + eventId,
+                    type: 'PUT',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(result) {
+                        alert('Event updated successfully!');
+                        window.location.href = '/';
+                    },
+                    error: function(err) {
+                        alert('Error updating event: ' + err.responseText);
+                    }
+                });
+            }
+        });
+
+        if (eventType !== 'view') {
+            $('#eventLogo').on('change', function() {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#eventLogoPreview').attr('src', e.target.result);
+                }
+                reader.readAsDataURL(this.files[0]);
+            });
+
+            $('#clientLogo').on('change', function() {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#clientLogoPreview').attr('src', e.target.result);
+                }
+                reader.readAsDataURL(this.files[0]);
+            });
+        }
+    });
+</script>
+</body>
+</html>

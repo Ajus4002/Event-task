@@ -1,0 +1,5 @@
+node_modules
+uploads/clientLogos/*
+uploads/eventLogos/*
+!uploads/eventLogos/.gitkeep
+!uploads/clientLogos/.gitkeep

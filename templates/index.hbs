@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event List</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+<div class="container mt-5">
+    <h2>Event List</h2>
+    <button class="btn btn-primary mb-3" id="createEvent">Create Event</button>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Event Name</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="eventList">
+            <!-- Events will be populated here via jQuery -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    $(document).ready(function() {
+        const API_URL = '/api/events';
+
+        // Fetch events and populate the table
+        function fetchEvents() {
+            $.get(API_URL, function(data) {
+                $('#eventList').empty(); // Clear the table
+                data.forEach(event => {
+                    const row = `
+                        <tr>
+                            <td>${event.eventName}</td>
+                            <td>${event.startDate}</td>
+                            <td>${event.endDate}</td>
+                            <td>
+                                <button class="btn btn-info" onclick="viewEvent(${event.id})">View</button>
+                                <button class="btn btn-warning" onclick="editEvent(${event.id})">Edit</button>
+                                <button class="btn btn-danger" onclick="deleteEvent(${event.id})">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                    $('#eventList').append(row);
+                });
+            });
+        }
+
+        fetchEvents();
+
+        // Handle the create event button click
+        $('#createEvent').click(function() {
+            window.location.href = '/event/create';
+        });
+
+        // Placeholder functions for view and edit buttons
+        window.viewEvent = function(id) {
+            window.location.href = '/event/' + id + '/view';
+        }
+
+        window.editEvent = function(id) {
+            window.location.href = '/event/' + id + '/edit';
+        }
+
+        // Delete event function
+        window.deleteEvent = function(id) {
+            $.ajax({
+                url: API_URL + '/' + id,
+                type: 'DELETE',
+                success: function(result) {
+                    alert('Event deleted successfully!');
+                    fetchEvents();  // Refresh the table after deletion
+                },
+                error: function(err) {
+                    alert('Error deleting event: ' + err.responseText);
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>
